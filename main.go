@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 
+	"github.com/travis-mark/salthaven/cmd/onthisday"
 	"github.com/travis-mark/salthaven/cmd/today"
 )
 
@@ -12,7 +13,8 @@ func main() {
 	if len(os.Args) < 2 {
 		fmt.Println("Usage: salthaven <command> [args...]")
 		fmt.Println("Commands:")
-		fmt.Println("  today [folder_path]  - Find markdown notes with today's date")
+		fmt.Println("  today [folder_path]     - Find markdown notes with today's date")
+		fmt.Println("  onthisday [folder_path] - Find markdown notes with today's month/day (any year)")
 		os.Exit(1)
 	}
 
@@ -31,10 +33,23 @@ func main() {
 		if err := today.Execute(folderPath); err != nil {
 			log.Fatal(err)
 		}
+	case "onthisday":
+		// Default folder to scan (current directory)
+		folderPath := "."
+
+		// Check if folder path is provided as command line argument
+		if len(os.Args) > 2 {
+			folderPath = os.Args[2]
+		}
+
+		if err := onthisday.Execute(folderPath); err != nil {
+			log.Fatal(err)
+		}
 	default:
 		fmt.Printf("Unknown command: %s\n", command)
 		fmt.Println("Available commands:")
-		fmt.Println("  today [folder_path]  - Find markdown notes with today's date")
+		fmt.Println("  today [folder_path]     - Find markdown notes with today's date")
+		fmt.Println("  onthisday [folder_path] - Find markdown notes with today's month/day (any year)")
 		os.Exit(1)
 	}
 }

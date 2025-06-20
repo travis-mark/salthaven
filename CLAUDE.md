@@ -16,11 +16,16 @@ go build -o salthaven
 # Run the today command (default: current directory)
 ./salthaven today
 
+# Run the onthisday command (finds notes with same month/day, any year)
+./salthaven onthisday
+
 # Run with specific folder
 ./salthaven today /path/to/notes
+./salthaven onthisday /path/to/notes
 
 # Run directly without building
 go run main.go today [folder_path]
+go run main.go onthisday [folder_path]
 ```
 
 ### Testing and Quality
@@ -43,11 +48,13 @@ go mod tidy && go list -json -m all | nancy sleuth
 ### Core Components
 
 - **main.go**: Command router handling subcommand dispatch
-- **cmd/today/**: Today subcommand package containing:
+- **cmd/today/**: Today subcommand package for finding notes with today's exact date
+- **cmd/onthisday/**: OnThisDay subcommand package for finding notes with same month/day (any year)
+- **Shared functionality across commands**:
   - **parseYAMLDate()**: Parses dates from YAML frontmatter with multiple format support
-  - **scanMarkdownNotesFromToday()**: Recursively walks directories to find markdown files
+  - **scanMarkdownNotes*()**: Recursively walks directories to find markdown files
   - **readFileContent()**: File reading utility
-  - **Execute()**: Main entry point for today command
+  - **Execute()**: Main entry point for each command
 
 ### Key Design Patterns
 
