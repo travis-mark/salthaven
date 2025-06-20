@@ -13,15 +13,23 @@ Salthaven is a Go CLI tool that scans directories for markdown files containing 
 # Build the project
 go build -o salthaven
 
-# Run the today command (default: current directory)
+# Run the today command (default: current directory or SALTHAVEN_FOLDER env var)
 ./salthaven today
 
 # Run the onthisday command (finds notes with same month/day, any year)
 ./salthaven onthisday
 
-# Run with specific folder
+# Run with specific folder (overrides env var)
 ./salthaven today /path/to/notes
 ./salthaven onthisday /path/to/notes
+
+# Set default folder via environment variable
+export SALTHAVEN_FOLDER=/path/to/your/notes
+./salthaven today  # Will use /path/to/your/notes
+
+# Or create a .env file in the current directory
+echo "SALTHAVEN_FOLDER=/path/to/your/notes" > .env
+./salthaven today  # Will use /path/to/your/notes
 
 # Run directly without building
 go run main.go today [folder_path]
@@ -69,6 +77,14 @@ The tool recognizes these date formats in YAML frontmatter:
 - `2006-01-02T15:04:05` (ISO 8601 variants)
 - `01/02/2006` and `02/01/2006` (US/European)
 - `January 2, 2006` and `Jan 2, 2006` (Named months)
+
+## Environment Variables
+
+- **SALTHAVEN_FOLDER**: Default folder path to scan for markdown files
+  - Priority: 1. Command line argument, 2. Environment variable, 3. .env file, 4. Current directory
+  - Can be set via: `export SALTHAVEN_FOLDER=/path/to/notes` or in `.env` file
+  - .env file format: `SALTHAVEN_FOLDER=/path/to/notes`
+  - Supports quoted values and comments (lines starting with #)
 
 ## Module Information
 
