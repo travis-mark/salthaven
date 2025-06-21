@@ -9,7 +9,7 @@ import (
 )
 
 // Execute runs the onthisday command
-func Execute(folderPath string) error {
+func Execute(folderPath string, verbose bool) error {
 	// Check if folder exists
 	if _, err := os.Stat(folderPath); os.IsNotExist(err) {
 		return fmt.Errorf("folder does not exist: %s", folderPath)
@@ -20,7 +20,7 @@ func Execute(folderPath string) error {
 		folderPath, today.Format("January 2"))
 
 	// Scan for notes on this day using the same day matcher
-	notes, err := markdown.ScanMarkdownNotes(folderPath, markdown.SameDayMatcher, today)
+	notes, err := markdown.ScanMarkdownNotes(folderPath, markdown.SameDayMatcher, today, verbose)
 	if err != nil {
 		return fmt.Errorf("error scanning folder: %v", err)
 	}

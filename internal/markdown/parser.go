@@ -82,7 +82,7 @@ func ReadFileContent(filePath string) (string, error) {
 type DateMatcher func(fileDate, referenceDate time.Time) bool
 
 // ScanMarkdownNotes scans the specified folder for markdown notes matching the date criteria
-func ScanMarkdownNotes(folderPath string, matcher DateMatcher, referenceDate time.Time) ([]string, error) {
+func ScanMarkdownNotes(folderPath string, matcher DateMatcher, referenceDate time.Time, verbose bool) ([]string, error) {
 	var matchingNotes []string
 
 	err := filepath.WalkDir(folderPath, func(path string, d fs.DirEntry, err error) error {
@@ -103,14 +103,18 @@ func ScanMarkdownNotes(folderPath string, matcher DateMatcher, referenceDate tim
 		// Read file content
 		content, err := ReadFileContent(path)
 		if err != nil {
-			fmt.Printf("Warning: Could not read file %s: %v\n", path, err)
+			if verbose {
+				fmt.Printf("Warning: Could not read file %s: %v\n", path, err)
+			}
 			return nil // Continue processing other files
 		}
 
 		// Parse date from YAML frontmatter
 		fileDate, err := ParseYAMLDate(content)
 		if err != nil {
-			fmt.Printf("Warning: Could not parse date from %s: %v\n", path, err)
+			if verbose {
+				fmt.Printf("Warning: Could not parse date from %s: %v\n", path, err)
+			}
 			return nil // Continue processing other files
 		}
 

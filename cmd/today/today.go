@@ -9,7 +9,7 @@ import (
 )
 
 // Execute runs the today command
-func Execute(folderPath string) error {
+func Execute(folderPath string, verbose bool) error {
 	// Check if folder exists
 	if _, err := os.Stat(folderPath); os.IsNotExist(err) {
 		return fmt.Errorf("folder does not exist: %s", folderPath)
@@ -19,7 +19,7 @@ func Execute(folderPath string) error {
 
 	// Scan for today's notes using the exact date matcher
 	today := time.Now()
-	notes, err := markdown.ScanMarkdownNotes(folderPath, markdown.ExactDateMatcher, today)
+	notes, err := markdown.ScanMarkdownNotes(folderPath, markdown.ExactDateMatcher, today, verbose)
 	if err != nil {
 		return fmt.Errorf("error scanning folder: %v", err)
 	}
