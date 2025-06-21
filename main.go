@@ -7,6 +7,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/travis-mark/salthaven/cmd/dayoneimport"
 	"github.com/travis-mark/salthaven/cmd/onthisday"
 	"github.com/travis-mark/salthaven/cmd/today"
 )
@@ -64,8 +65,9 @@ func main() {
 	if len(os.Args) < 2 {
 		fmt.Println("Usage: salthaven <command> [options] [args...]")
 		fmt.Println("Commands:")
-		fmt.Println("  today [-v|--verbose] [folder_path]     - Find markdown notes with today's date")
-		fmt.Println("  onthisday [-v|--verbose] [folder_path] - Find markdown notes with today's month/day (any year)")
+		fmt.Println("  today [-v|--verbose] [folder_path]       - Find markdown notes with today's date")
+		fmt.Println("  onthisday [-v|--verbose] [folder_path]   - Find markdown notes with today's month/day (any year)")
+		fmt.Println("  dayoneimport [-v|--verbose] [folder_path] - Import Day One entries to markdown")
 		fmt.Println("Options:")
 		fmt.Println("  -v, --verbose    - Enable verbose output (show warnings)")
 		os.Exit(1)
@@ -108,11 +110,29 @@ func main() {
 		if err := onthisday.Execute(folderPath, verbose); err != nil {
 			log.Fatal(err)
 		}
+	case "dayoneimport":
+		folderPath := getDefaultFolderPath()
+		verbose := false
+		
+		// Parse arguments
+		for i := 2; i < len(os.Args); i++ {
+			arg := os.Args[i]
+			if arg == "-v" || arg == "--verbose" {
+				verbose = true
+			} else {
+				folderPath = arg
+			}
+		}
+
+		if err := dayoneimport.Execute(folderPath, verbose); err != nil {
+			log.Fatal(err)
+		}
 	default:
 		fmt.Printf("Unknown command: %s\n", command)
 		fmt.Println("Available commands:")
-		fmt.Println("  today [-v|--verbose] [folder_path]     - Find markdown notes with today's date")
-		fmt.Println("  onthisday [-v|--verbose] [folder_path] - Find markdown notes with today's month/day (any year)")
+		fmt.Println("  today [-v|--verbose] [folder_path]       - Find markdown notes with today's date")
+		fmt.Println("  onthisday [-v|--verbose] [folder_path]   - Find markdown notes with today's month/day (any year)")
+		fmt.Println("  dayoneimport [-v|--verbose] [folder_path] - Import Day One entries to markdown")
 		os.Exit(1)
 	}
 }
