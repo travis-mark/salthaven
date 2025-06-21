@@ -31,19 +31,19 @@ func ParseDayOneExport(filePath string, verbose bool) ([]DayOneEntry, error) {
 	var currentEntry DayOneEntry
 	var contentLines []string
 	inContent := false
-	
+
 	scanner := bufio.NewScanner(file)
 	lineNum := 0
-	
+
 	// Regex patterns for parsing
 	dateRegex := regexp.MustCompile(`^\s*Date:\s*(.+)$`)
 	weatherRegex := regexp.MustCompile(`^\s*Weather:\s*(.+)$`)
 	locationRegex := regexp.MustCompile(`^\s*Location:\s*(.+)$`)
-	
+
 	for scanner.Scan() {
 		line := scanner.Text()
 		lineNum++
-		
+
 		// Check for new entry start (Date line)
 		if matches := dateRegex.FindStringSubmatch(line); matches != nil {
 			// Save previous entry if we have one
@@ -51,7 +51,7 @@ func ParseDayOneExport(filePath string, verbose bool) ([]DayOneEntry, error) {
 				currentEntry.Content = strings.Join(contentLines, "\n")
 				entries = append(entries, currentEntry)
 			}
-			
+
 			// Start new entry
 			dateStr := strings.TrimSpace(matches[1])
 			parsedDate, err := parseDayOneDate(dateStr)
@@ -61,31 +61,31 @@ func ParseDayOneExport(filePath string, verbose bool) ([]DayOneEntry, error) {
 				}
 				continue
 			}
-			
+
 			currentEntry = DayOneEntry{Date: parsedDate}
 			contentLines = []string{}
 			inContent = false
 			continue
 		}
-		
+
 		// Check for weather
 		if matches := weatherRegex.FindStringSubmatch(line); matches != nil {
 			currentEntry.Weather = strings.TrimSpace(matches[1])
 			continue
 		}
-		
+
 		// Check for location
 		if matches := locationRegex.FindStringSubmatch(line); matches != nil {
 			currentEntry.Location = strings.TrimSpace(matches[1])
 			continue
 		}
-		
+
 		// Empty line after metadata starts content
 		if strings.TrimSpace(line) == "" && !inContent {
 			inContent = true
 			continue
 		}
-		
+
 		// Collect content lines
 		if inContent {
 			// First non-empty line after metadata is the title
@@ -96,17 +96,17 @@ func ParseDayOneExport(filePath string, verbose bool) ([]DayOneEntry, error) {
 			}
 		}
 	}
-	
+
 	// Don't forget the last entry
 	if !currentEntry.Date.IsZero() {
 		currentEntry.Content = strings.Join(contentLines, "\n")
 		entries = append(entries, currentEntry)
 	}
-	
+
 	if err := scanner.Err(); err != nil {
 		return nil, fmt.Errorf("error reading file: %v", err)
 	}
-	
+
 	return entries, nil
 }
 
@@ -116,26 +116,26 @@ func parseDayOneDate(dateStr string) (time.Time, error) {
 	formats := []string{
 		"January 2, 2006 at 15:04:05 MST",
 		"January 2, 2006 at 15:04:05 EST",
-		"January 2, 2006 at 15:04:05 CST", 
+		"January 2, 2006 at 15:04:05 CST",
 		"January 2, 2006 at 15:04:05 PST",
 		"January 2, 2006 at 15:04:05 EDT",
 		"January 2, 2006 at 15:04:05 CDT",
 		"January 2, 2006 at 15:04:05 PDT",
 	}
-	
+
 	for _, format := range formats {
 		if t, err := time.Parse(format, dateStr); err == nil {
 			return t, nil
 		}
 	}
-	
+
 	return time.Time{}, fmt.Errorf("could not parse date format: %s", dateStr)
 }
 
 // ConvertToMarkdown converts a Day One entry to markdown format
 func (entry DayOneEntry) ConvertToMarkdown() string {
 	var sb strings.Builder
-	
+
 	// YAML frontmatter
 	sb.WriteString("---\n")
 	sb.WriteString(fmt.Sprintf("date: %s\n", entry.Date.Format("2006-01-02")))
@@ -147,16 +147,16 @@ func (entry DayOneEntry) ConvertToMarkdown() string {
 	}
 	sb.WriteString("source: Day One\n")
 	sb.WriteString("---\n\n")
-	
+
 	// Title
 	if entry.Title != "" {
 		sb.WriteString(fmt.Sprintf("# %s\n\n", entry.Title))
 	}
-	
+
 	// Content
 	sb.WriteString(entry.Content)
 	sb.WriteString("\n")
-	
+
 	return sb.String()
 }
 
@@ -188,16 +188,16 @@ func Execute(folderPath string, verbose bool) error {
 	for _, entry := range entries {
 		filename := fmt.Sprintf("%s-dayone.md", entry.Date.Format("2006-01-02"))
 		outputPath := filepath.Join(folderPath, filename)
-		
+
 		markdown := entry.ConvertToMarkdown()
-		
+
 		if err := os.WriteFile(outputPath, []byte(markdown), 0644); err != nil {
 			if verbose {
 				fmt.Printf("Warning: Could not write %s: %v\n", outputPath, err)
 			}
 			continue
 		}
-		
+
 		successCount++
 		if verbose {
 			fmt.Printf("Created: %s\n", outputPath)

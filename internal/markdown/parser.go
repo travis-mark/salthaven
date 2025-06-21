@@ -131,13 +131,13 @@ func ScanMarkdownNotes(folderPath string, matcher DateMatcher, referenceDate tim
 
 // ExactDateMatcher returns true if the file date exactly matches the reference date (same year, month, day)
 func ExactDateMatcher(fileDate, referenceDate time.Time) bool {
-	return fileDate.Year() == referenceDate.Year() && 
-		   fileDate.Month() == referenceDate.Month() && 
-		   fileDate.Day() == referenceDate.Day()
+	return fileDate.Year() == referenceDate.Year() &&
+		fileDate.Month() == referenceDate.Month() &&
+		fileDate.Day() == referenceDate.Day()
 }
 
 // SameDayMatcher returns true if the file date has the same month and day (any year)
 func SameDayMatcher(fileDate, referenceDate time.Time) bool {
-	return fileDate.Month() == referenceDate.Month() && 
-		   fileDate.Day() == referenceDate.Day()
+	return fileDate.Month() == referenceDate.Month() &&
+		fileDate.Day() == referenceDate.Day()
 }
