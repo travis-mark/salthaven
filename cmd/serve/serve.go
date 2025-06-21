@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"sort"
 	"strconv"
 	"time"
 
@@ -468,6 +469,11 @@ func Execute(folderPath string, verbose bool, port int) error {
 				Content: cleanContent,
 			})
 		}
+
+		// Sort notes by date, newest first
+		sort.Slice(notes, func(i, j int) bool {
+			return notes[i].Date.After(notes[j].Date)
+		})
 
 		// Prepare template data
 		data := PageData{
