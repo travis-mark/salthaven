@@ -15,10 +15,11 @@ import (
 
 // NoteEntry represents a markdown note with its metadata
 type NoteEntry struct {
-	Path    string
-	Date    time.Time
-	Title   string
-	Content string
+	Path     string
+	FullPath string
+	Date     time.Time
+	Title    string
+	Content  string
 }
 
 const htmlTemplate = `<!DOCTYPE html>
@@ -151,6 +152,15 @@ const htmlTemplate = `<!DOCTYPE html>
             margin: 0;
             transition: color 0.3s ease;
         }
+        .note-title-link {
+            color: var(--text-accent);
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+        .note-title-link:hover {
+            text-decoration: underline;
+            opacity: 0.8;
+        }
         .note-date {
             color: var(--text-secondary);
             font-size: 0.9em;
@@ -210,7 +220,9 @@ const htmlTemplate = `<!DOCTYPE html>
         <div class="note">
             <div class="note-header">
                 {{if .Title}}
-                <h2 class="note-title">{{.Title}}</h2>
+                <h2 class="note-title">
+                    <a href="obsidian://open?path={{.FullPath}}" class="note-title-link">{{.Title}}</a>
+                </h2>
                 {{end}}
                 <div class="note-date">{{.Date.Format "January 2, 2006"}}</div>
                 <div class="note-path">{{.Path}}</div>
@@ -462,11 +474,18 @@ func Execute(folderPath string, verbose bool, port int) error {
 				relPath = path
 			}
 
+			// Get absolute path for Obsidian link
+			fullPath, err := filepath.Abs(path)
+			if err != nil {
+				fullPath = path
+			}
+
 			notes = append(notes, NoteEntry{
-				Path:    relPath,
-				Date:    fileDate,
-				Title:   title,
-				Content: cleanContent,
+				Path:     relPath,
+				FullPath: fullPath,
+				Date:     fileDate,
+				Title:    title,
+				Content:  cleanContent,
 			})
 		}
 
