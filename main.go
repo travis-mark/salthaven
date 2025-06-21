@@ -22,24 +22,24 @@ func loadEnvFile(filename string) {
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
 		line := strings.TrimSpace(scanner.Text())
-		
+
 		// Skip empty lines and comments
 		if line == "" || strings.HasPrefix(line, "#") {
 			continue
 		}
-		
+
 		// Parse KEY=VALUE format
 		parts := strings.SplitN(line, "=", 2)
 		if len(parts) == 2 {
 			key := strings.TrimSpace(parts[0])
 			value := strings.TrimSpace(parts[1])
-			
+
 			// Remove quotes if present
-			if len(value) >= 2 && ((value[0] == '"' && value[len(value)-1] == '"') || 
+			if len(value) >= 2 && ((value[0] == '"' && value[len(value)-1] == '"') ||
 				(value[0] == '\'' && value[len(value)-1] == '\'')) {
 				value = value[1 : len(value)-1]
 			}
-			
+
 			// Only set if not already set in environment
 			if os.Getenv(key) == "" {
 				os.Setenv(key, value)
@@ -53,7 +53,7 @@ func loadEnvFile(filename string) {
 func getDefaultFolderPath() string {
 	// Load .env file if it exists (only affects environment if var not already set)
 	loadEnvFile(".env")
-	
+
 	if envPath := os.Getenv("SALTHAVEN_FOLDER"); envPath != "" {
 		return envPath
 	}
