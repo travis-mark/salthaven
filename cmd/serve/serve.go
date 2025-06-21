@@ -27,83 +27,179 @@ const htmlTemplate = `<!DOCTYPE html>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>On This Day - {{.FormattedDate}}</title>
     <style>
+        :root {
+            --bg-primary: #f9f9f9;
+            --bg-secondary: white;
+            --text-primary: #333;
+            --text-secondary: #7f8c8d;
+            --text-tertiary: #95a5a6;
+            --text-accent: #2c3e50;
+            --text-content: #34495e;
+            --border-color: #eee;
+            --shadow: rgba(0,0,0,0.1);
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg-primary: #1a1a1a;
+                --bg-secondary: #2d2d2d;
+                --text-primary: #e0e0e0;
+                --text-secondary: #b0b0b0;
+                --text-tertiary: #888;
+                --text-accent: #64b5f6;
+                --text-content: #d0d0d0;
+                --border-color: #444;
+                --shadow: rgba(0,0,0,0.3);
+            }
+        }
+
+        [data-theme="dark"] {
+            --bg-primary: #1a1a1a;
+            --bg-secondary: #2d2d2d;
+            --text-primary: #e0e0e0;
+            --text-secondary: #b0b0b0;
+            --text-tertiary: #888;
+            --text-accent: #64b5f6;
+            --text-content: #d0d0d0;
+            --border-color: #444;
+            --shadow: rgba(0,0,0,0.3);
+        }
+
+        [data-theme="light"] {
+            --bg-primary: #f9f9f9;
+            --bg-secondary: white;
+            --text-primary: #333;
+            --text-secondary: #7f8c8d;
+            --text-tertiary: #95a5a6;
+            --text-accent: #2c3e50;
+            --text-content: #34495e;
+            --border-color: #eee;
+            --shadow: rgba(0,0,0,0.1);
+        }
+
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
             line-height: 1.6;
             max-width: 800px;
             margin: 0 auto;
             padding: 20px;
-            color: #333;
-            background-color: #f9f9f9;
+            color: var(--text-primary);
+            background-color: var(--bg-primary);
+            transition: background-color 0.3s ease, color 0.3s ease;
         }
         .header {
             text-align: center;
             margin-bottom: 30px;
             padding: 20px;
-            background: white;
+            background: var(--bg-secondary);
             border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 4px var(--shadow);
+            position: relative;
+            transition: background-color 0.3s ease, box-shadow 0.3s ease;
         }
         .header h1 {
-            color: #2c3e50;
+            color: var(--text-accent);
             margin: 0;
+            transition: color 0.3s ease;
         }
         .header p {
-            color: #7f8c8d;
+            color: var(--text-secondary);
             margin: 10px 0 0 0;
+            transition: color 0.3s ease;
+        }
+        .theme-toggle {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: none;
+            border: 2px solid var(--text-tertiary);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            cursor: pointer;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            color: var(--text-tertiary);
+        }
+        .theme-toggle:hover {
+            border-color: var(--text-accent);
+            color: var(--text-accent);
+            transform: scale(1.1);
         }
         .note {
-            background: white;
+            background: var(--bg-secondary);
             margin: 20px 0;
             padding: 20px;
             border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 4px var(--shadow);
+            transition: background-color 0.3s ease, box-shadow 0.3s ease;
         }
         .note-header {
-            border-bottom: 1px solid #eee;
+            border-bottom: 1px solid var(--border-color);
             padding-bottom: 10px;
             margin-bottom: 15px;
+            transition: border-color 0.3s ease;
         }
         .note-title {
             font-size: 1.3em;
             font-weight: bold;
-            color: #2c3e50;
+            color: var(--text-accent);
             margin: 0;
+            transition: color 0.3s ease;
         }
         .note-date {
-            color: #7f8c8d;
+            color: var(--text-secondary);
             font-size: 0.9em;
             margin: 5px 0;
+            transition: color 0.3s ease;
         }
         .note-path {
-            color: #95a5a6;
+            color: var(--text-tertiary);
             font-size: 0.8em;
             font-family: monospace;
+            transition: color 0.3s ease;
         }
         .note-content {
             white-space: pre-wrap;
-            color: #34495e;
+            color: var(--text-content);
+            transition: color 0.3s ease;
         }
         .no-notes {
             text-align: center;
-            color: #7f8c8d;
+            color: var(--text-secondary);
             font-style: italic;
             padding: 40px;
-            background: white;
+            background: var(--bg-secondary);
             border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 4px var(--shadow);
+            transition: all 0.3s ease;
         }
         .footer {
             text-align: center;
             margin-top: 30px;
             padding: 20px;
-            color: #95a5a6;
+            color: var(--text-tertiary);
             font-size: 0.9em;
+            transition: color 0.3s ease;
+        }
+        .footer a {
+            color: var(--text-accent);
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+        .footer a:hover {
+            text-decoration: underline;
         }
     </style>
 </head>
 <body>
     <div class="header">
+        <button class="theme-toggle" onclick="toggleTheme()" title="Toggle dark/light mode">
+            <span class="theme-icon">🌙</span>
+        </button>
         <h1>On This Day</h1>
         <p>{{.FormattedDate}} • {{.Count}} {{if eq .Count 1}}entry{{else}}entries{{end}} found</p>
     </div>
@@ -130,6 +226,53 @@ const htmlTemplate = `<!DOCTYPE html>
     <div class="footer">
         Generated by Salthaven • <a href="javascript:location.reload()">Refresh</a>
     </div>
+
+    <script>
+        // Theme management
+        function getStoredTheme() {
+            return localStorage.getItem('theme');
+        }
+
+        function setStoredTheme(theme) {
+            localStorage.setItem('theme', theme);
+        }
+
+        function getPreferredTheme() {
+            const storedTheme = getStoredTheme();
+            if (storedTheme) {
+                return storedTheme;
+            }
+            return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        }
+
+        function setTheme(theme) {
+            document.documentElement.setAttribute('data-theme', theme);
+            const themeIcon = document.querySelector('.theme-icon');
+            if (themeIcon) {
+                themeIcon.textContent = theme === 'dark' ? '☀️' : '🌙';
+            }
+        }
+
+        function toggleTheme() {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            setTheme(newTheme);
+            setStoredTheme(newTheme);
+        }
+
+        // Initialize theme on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            const preferredTheme = getPreferredTheme();
+            setTheme(preferredTheme);
+        });
+
+        // Listen for system theme changes
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function(e) {
+            if (!getStoredTheme()) {
+                setTheme(e.matches ? 'dark' : 'light');
+            }
+        });
+    </script>
 </body>
 </html>`
 
