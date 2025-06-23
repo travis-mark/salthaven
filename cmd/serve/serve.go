@@ -204,6 +204,43 @@ const htmlTemplate = `<!DOCTYPE html>
         .footer a:hover {
             text-decoration: underline;
         }
+        
+        /* Checkbox styling */
+        .checkbox-item {
+            display: flex;
+            align-items: flex-start;
+            margin: 2px 0;
+            line-height: 1.5;
+        }
+        .checkbox {
+            width: 12px;
+            height: 12px;
+            margin-right: 6px;
+            margin-top: 3px;
+            border: 1px solid var(--text-tertiary);
+            border-radius: 2px;
+            background: var(--bg-secondary);
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.2s ease;
+        }
+        .checkbox.checked {
+            background: var(--text-accent);
+            border-color: var(--text-accent);
+        }
+        .checkbox.checked::after {
+            content: '✓';
+            color: var(--bg-secondary);
+            font-size: 9px;
+            font-weight: bold;
+            line-height: 1;
+        }
+        .checkbox-text {
+            flex: 1;
+            color: var(--text-content);
+        }
     </style>
 </head>
 <body>
@@ -284,6 +321,42 @@ const htmlTemplate = `<!DOCTYPE html>
             if (!getStoredTheme()) {
                 setTheme(e.matches ? 'dark' : 'light');
             }
+        });
+
+        // Checkbox functionality
+        function convertCheckboxes() {
+            const noteContents = document.querySelectorAll('.note-content');
+            
+            noteContents.forEach(function(content) {
+                let html = content.innerHTML;
+                
+                // Convert unchecked checkboxes: - [ ] or * [ ] 
+                html = html.replace(/^(\s*)([-*])\s+\[\s\]\s+(.+)$/gm, function(match, indent, bullet, text) {
+                    return indent + '<div class="checkbox-item">' +
+                           '<div class="checkbox"></div>' +
+                           '<span class="checkbox-text">' + text + '</span>' +
+                           '</div>';
+                });
+                
+                // Convert checked checkboxes: - [x] or * [x]
+                html = html.replace(/^(\s*)([-*])\s+\[[xX]\]\s+(.+)$/gm, function(match, indent, bullet, text) {
+                    return indent + '<div class="checkbox-item checked">' +
+                           '<div class="checkbox checked"></div>' +
+                           '<span class="checkbox-text">' + text + '</span>' +
+                           '</div>';
+                });
+                
+                content.innerHTML = html;
+            });
+        }
+
+        // Initialize checkboxes after theme is set
+        document.addEventListener('DOMContentLoaded', function() {
+            const preferredTheme = getPreferredTheme();
+            setTheme(preferredTheme);
+            
+            // Convert checkboxes after a short delay to ensure content is rendered
+            setTimeout(convertCheckboxes, 100);
         });
     </script>
 </body>
