@@ -241,6 +241,26 @@ const htmlTemplate = `<!DOCTYPE html>
             flex: 1;
             color: var(--text-content);
         }
+        
+        /* Link styling */
+        .content-link {
+            color: var(--text-accent);
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+        .content-link:hover {
+            text-decoration: underline;
+            opacity: 0.8;
+        }
+        .obsidian-link {
+            color: var(--text-accent);
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+        .obsidian-link:hover {
+            text-decoration: underline;
+            opacity: 0.8;
+        }
     </style>
 </head>
 <body>
@@ -323,6 +343,35 @@ const htmlTemplate = `<!DOCTYPE html>
             }
         });
 
+        // Link conversion functions
+        function convertMarkdownLinks(text) {
+            // Convert markdown links [text](url)
+            return text.replace(/\[([^\]]+)\]\(([^)]+)\)/g, function(match, linkText, url) {
+                return '<a href="' + url + '" class="content-link" target="_blank" rel="noopener">' + linkText + '</a>';
+            });
+        }
+
+        function convertObsidianLinks(text) {
+            // Convert Obsidian wikilinks [[link]] or [[link|display text]]
+            return text.replace(/\[\[([^\]]+)\]\]/g, function(match, linkContent) {
+                const parts = linkContent.split('|');
+                const linkPath = parts[0].trim();
+                const displayText = parts.length > 1 ? parts[1].trim() : linkPath;
+                
+                // Create Obsidian protocol link with proper encoding
+                const encodedPath = encodeURIComponent(linkPath);
+                const obsidianUrl = 'obsidian://open?vault=&file=' + encodedPath;
+                return '<a href="' + obsidianUrl + '" class="obsidian-link">' + displayText + '</a>';
+            });
+        }
+
+        function convertLinks(text) {
+            // Convert markdown links first, then Obsidian links
+            text = convertMarkdownLinks(text);
+            text = convertObsidianLinks(text);
+            return text;
+        }
+
         // Checkbox functionality
         function convertCheckboxes() {
             const noteContents = document.querySelectorAll('.note-content');
@@ -332,19 +381,32 @@ const htmlTemplate = `<!DOCTYPE html>
                 
                 // Convert unchecked checkboxes: - [ ] or * [ ] 
                 html = html.replace(/^(\s*)([-*])\s+\[\s\]\s+(.+)$/gm, function(match, indent, bullet, text) {
+                    const convertedText = convertLinks(text);
                     return indent + '<div class="checkbox-item">' +
                            '<div class="checkbox"></div>' +
-                           '<span class="checkbox-text">' + text + '</span>' +
+                           '<span class="checkbox-text">' + convertedText + '</span>' +
                            '</div>';
                 });
                 
                 // Convert checked checkboxes: - [x] or * [x]
                 html = html.replace(/^(\s*)([-*])\s+\[[xX]\]\s+(.+)$/gm, function(match, indent, bullet, text) {
+                    const convertedText = convertLinks(text);
                     return indent + '<div class="checkbox-item checked">' +
                            '<div class="checkbox checked"></div>' +
-                           '<span class="checkbox-text">' + text + '</span>' +
+                           '<span class="checkbox-text">' + convertedText + '</span>' +
                            '</div>';
                 });
+                
+                // Convert links in remaining text (non-checkbox lines)
+                const lines = html.split('\n');
+                const processedLines = lines.map(function(line) {
+                    // Skip lines that are already converted to checkbox HTML
+                    if (line.includes('checkbox-item')) {
+                        return line;
+                    }
+                    return convertLinks(line);
+                });
+                html = processedLines.join('\n');
                 
                 content.innerHTML = html;
             });
