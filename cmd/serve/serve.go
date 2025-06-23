@@ -366,6 +366,7 @@ const htmlTemplate = `<!DOCTYPE html>
 func extractTitleFromContent(content string) string {
 	lines := splitLines(content)
 	inFrontmatter := false
+	foundFirstContentLine := false
 
 	for i, line := range lines {
 		line = trimSpace(line)
@@ -385,9 +386,12 @@ func extractTitleFromContent(content string) string {
 				return extractTitleValue(line)
 			}
 		} else {
-			// Look for first markdown header
-			if startsWithHash(line) {
-				return trimLeadingHashes(line)
+			// Only check the first non-empty content line for markdown header
+			if !foundFirstContentLine && line != "" {
+				foundFirstContentLine = true
+				if startsWithHash(line) {
+					return trimLeadingHashes(line)
+				}
 			}
 		}
 	}
@@ -495,6 +499,64 @@ func getContentWithoutFrontmatter(content string) string {
 	return content
 }
 
+// getContentWithoutFrontmatterAndTitle removes YAML frontmatter and first-line title from content
+func getContentWithoutFrontmatterAndTitle(content, extractedTitle string) string {
+	lines := splitLines(content)
+	if len(lines) == 0 {
+		return content
+	}
+
+	startIndex := 0
+
+	// Skip frontmatter if present
+	if trimSpace(lines[0]) == "---" {
+		for i := 1; i < len(lines); i++ {
+			if trimSpace(lines[i]) == "---" {
+				startIndex = i + 1
+				break
+			}
+		}
+	}
+
+	// If we extracted a title from a header, skip the first non-empty content line
+	if extractedTitle != "" && startIndex < len(lines) {
+		for i := startIndex; i < len(lines); i++ {
+			line := trimSpace(lines[i])
+			if line != "" {
+				// Check if this line is a header that matches our extracted title
+				if startsWithHash(line) && trimLeadingHashes(line) == extractedTitle {
+					startIndex = i + 1
+				}
+				break
+			}
+		}
+	}
+
+	// Build result from remaining lines
+	if startIndex >= len(lines) {
+		return ""
+	}
+
+	// Skip any empty lines at the beginning of content
+	for startIndex < len(lines) && trimSpace(lines[startIndex]) == "" {
+		startIndex++
+	}
+
+	if startIndex >= len(lines) {
+		return ""
+	}
+
+	var result string
+	for j := startIndex; j < len(lines); j++ {
+		if j > startIndex {
+			result += "\n"
+		}
+		result += lines[j]
+	}
+
+	return result
+}
+
 // PageData represents the data passed to the HTML template
 type PageData struct {
 	Notes         []NoteEntry
@@ -539,7 +601,7 @@ func Execute(folderPath string, verbose bool, port int) error {
 			}
 
 			title := extractTitleFromContent(content)
-			cleanContent := getContentWithoutFrontmatter(content)
+			cleanContent := getContentWithoutFrontmatterAndTitle(content, title)
 
 			// Get relative path for display
 			relPath, err := filepath.Rel(folderPath, path)
