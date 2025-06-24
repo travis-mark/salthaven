@@ -8,10 +8,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/travis-mark/salthaven/cmd/dayoneimport"
-	"github.com/travis-mark/salthaven/cmd/onthisday"
+	"github.com/travis-mark/salthaven/cmd/list"
 	"github.com/travis-mark/salthaven/cmd/serve"
-	"github.com/travis-mark/salthaven/cmd/today"
 )
 
 // loadEnvFile loads environment variables from a .env file
@@ -63,24 +61,26 @@ func getDefaultFolderPath() string {
 	return "."
 }
 
+func usage() {
+	fmt.Println("Usage: salthaven <command> [folder_path] [options] [args...]")
+	fmt.Println("Commands:")
+	fmt.Println("  list           List markdown notes matching today's date")
+	fmt.Println("  serve          Serve a web page with today's entries")
+	fmt.Println("Options:")
+	fmt.Println("  -v, --verbose  Enable verbose output (show warnings)")
+	fmt.Println("  -p, --port     Port number for serve command (default: 8080)")
+}
+
 func main() {
 	if len(os.Args) < 2 {
-		fmt.Println("Usage: salthaven <command> [options] [args...]")
-		fmt.Println("Commands:")
-		fmt.Println("  today [-v|--verbose] [folder_path]       - Find markdown notes with today's date")
-		fmt.Println("  onthisday [-v|--verbose] [folder_path]   - Find markdown notes with today's month/day (any year)")
-		fmt.Println("  dayoneimport [-v|--verbose] [folder_path] - Import Day One entries to markdown")
-		fmt.Println("  serve [-v|--verbose] [-p|--port PORT] [folder_path] - Serve a web page with today's entries")
-		fmt.Println("Options:")
-		fmt.Println("  -v, --verbose    - Enable verbose output (show warnings)")
-		fmt.Println("  -p, --port       - Port number for serve command (default: 8080)")
+		usage()
 		os.Exit(1)
 	}
 
 	command := os.Args[1]
 
 	switch command {
-	case "today":
+	case "list":
 		folderPath := getDefaultFolderPath()
 		verbose := false
 
@@ -94,41 +94,7 @@ func main() {
 			}
 		}
 
-		if err := today.Execute(folderPath, verbose); err != nil {
-			log.Fatal(err)
-		}
-	case "onthisday":
-		folderPath := getDefaultFolderPath()
-		verbose := false
-
-		// Parse arguments
-		for i := 2; i < len(os.Args); i++ {
-			arg := os.Args[i]
-			if arg == "-v" || arg == "--verbose" {
-				verbose = true
-			} else {
-				folderPath = arg
-			}
-		}
-
-		if err := onthisday.Execute(folderPath, verbose); err != nil {
-			log.Fatal(err)
-		}
-	case "dayoneimport":
-		folderPath := getDefaultFolderPath()
-		verbose := false
-
-		// Parse arguments
-		for i := 2; i < len(os.Args); i++ {
-			arg := os.Args[i]
-			if arg == "-v" || arg == "--verbose" {
-				verbose = true
-			} else {
-				folderPath = arg
-			}
-		}
-
-		if err := dayoneimport.Execute(folderPath, verbose); err != nil {
+		if err := list.Execute(folderPath, verbose); err != nil {
 			log.Fatal(err)
 		}
 	case "serve":
@@ -157,12 +123,6 @@ func main() {
 			log.Fatal(err)
 		}
 	default:
-		fmt.Printf("Unknown command: %s\n", command)
-		fmt.Println("Available commands:")
-		fmt.Println("  today [-v|--verbose] [folder_path]       - Find markdown notes with today's date")
-		fmt.Println("  onthisday [-v|--verbose] [folder_path]   - Find markdown notes with today's month/day (any year)")
-		fmt.Println("  dayoneimport [-v|--verbose] [folder_path] - Import Day One entries to markdown")
-		fmt.Println("  serve [-v|--verbose] [-p|--port PORT] [folder_path] - Serve a web page with today's entries")
-		os.Exit(1)
+		usage()
 	}
 }

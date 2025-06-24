@@ -1,4 +1,4 @@
-package today
+package list
 
 import (
 	"fmt"
@@ -8,15 +8,15 @@ import (
 	"github.com/travis-mark/salthaven/internal/markdown"
 )
 
-// Execute runs the today command
+// Execute runs the onthisday command
 func Execute(folderPath string, verbose bool) error {
 	// Check if folder exists
 	if _, err := os.Stat(folderPath); os.IsNotExist(err) {
 		return fmt.Errorf("folder does not exist: %s", folderPath)
 	}
-	// Scan for today's notes using the exact date matcher
+	// Scan for notes on this day using the same day matcher
 	today := time.Now()
-	notes, err := markdown.ScanMarkdownNotes(folderPath, markdown.ExactDateMatcher, today, verbose)
+	notes, err := markdown.ScanMarkdownNotes(folderPath, markdown.SameDayMatcher, today, verbose)
 	if err != nil {
 		return fmt.Errorf("error scanning folder: %v", err)
 	}
